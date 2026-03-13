@@ -32,12 +32,18 @@ export async function extractDataFromImages(base64Images, apiKey) {
     }
 
     try {
-        const parts = base64Images.map(img => ({
-            inlineData: {
-                data: img.split(',')[1], // remove prefix
-                mimeType: "image/jpeg"
-            }
-        }));
+        const parts = base64Images.map(img => {
+            const [header, data] = img.split(',');
+            const mimeType = header.split(':')[1].split(';')[0] || "image/jpeg";
+            return {
+                inlineData: {
+                    data,
+                    mimeType
+                }
+            };
+        });
+
+        console.log(`[VisionAI] Envieando ${parts.length} imagens para o Gemini...`);
 
         const response = await fetch(`${GEMINI_API_URL}?key=${apiKey}`, {
             method: 'POST',
@@ -55,12 +61,34 @@ export async function extractDataFromImages(base64Images, apiKey) {
             })
         });
 
+        if (!response.ok) {
+            const errorBody = await response.json();
+            console.error("[VisionAI] Erro da API do Google:", JSON.stringify(errorBody, null, 2));
+            
+            if (errorBody.error?.message?.includes("API key not valid")) {
+                throw new Error("Sua chave de API do Gemini não é válida. Verifique nas configurações.");
+            }
+            throw new Error(`Erro na API (${response.status}): ${errorBody.error?.message || 'Erro desconhecido'}`);
+        }
+
         const result = await response.json();
+        
+        if (!result.candidates || result.candidates.length === 0) {
+            console.error("[VisionAI] Nenhum resultado retornado (possível bloqueio de segurança):", result);
+            throw new Error("O Google não conseguiu analisar esta imagem (bloqueio de segurança ou baixa qualidade).");
+        }
+
         const textResponse = result.candidates[0].content.parts[0].text;
-        return JSON.parse(textResponse);
+        console.log("[VisionAI] Resposta da IA:", textResponse);
+        
+        // Clean up markdown if present
+        const jsonMatch = textResponse.match(/\{[\s\S]*\}/);
+        const cleanJson = jsonMatch ? jsonMatch[0] : textResponse;
+        
+        return JSON.parse(cleanJson);
     } catch (error) {
         console.error("Vision API Error:", error);
-        throw new Error("Falha ao analisar imagem. Verifique sua chave de API.");
+        throw error;
     }
 }
 
