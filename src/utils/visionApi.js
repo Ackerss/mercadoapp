@@ -3,7 +3,7 @@
  * For now, it includes a robust mock mode to allow development without an API key.
  */
 
-const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";
+const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent";
 
 const SYSTEM_PROMPT = `
 You are a scanner for a supermarket comparison app. 
