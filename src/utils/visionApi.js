@@ -1,14 +1,15 @@
 /**
  * Utility to interact with Vision APIs (Gemini 1.5 Flash).
- * For now, it includes a robust mock mode to allow development without an API key.
+ * Focuses on stability by using minimal parameters and robust parsing.
  */
 
-const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent";
+const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";
 
 const SYSTEM_PROMPT = `
 You are a scanner for a supermarket comparison app. 
 Analyze the provided images (usually a product photo, a price tag, and/or product details).
-Extract the following information as a JSON object:
+Extract the following information as a JSON object (STRICTLY NO MARKDOWN, NO BACKTICKS):
+
 {
   "name": "Full product name/brand",
   "price": number (the total price),
@@ -23,6 +24,7 @@ RULES:
 2. For multiple items (packs), extract the number of units and the volume of ONE unit.
 3. NEVER calculate the unit cost yourself. Just extract the raw numbers as shown.
 4. If a value is missing or illegible, set it to 0 or null.
+5. Provide ONLY the JSON object. Do not explain.
 `;
 
 export async function extractDataFromImages(base64Images, apiKey) {
@@ -43,9 +45,10 @@ export async function extractDataFromImages(base64Images, apiKey) {
             };
         });
 
-        console.log(`[VisionAI] Envieando ${parts.length} imagens para o Gemini...`);
+        console.log(`[VisionAI] Enviando ${parts.length} imagens para o Gemini (v1beta)...`);
 
         const response = await fetch(`${GEMINI_API_URL}?key=${apiKey}`, {
+            button: 'POST',
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -55,8 +58,10 @@ export async function extractDataFromImages(base64Images, apiKey) {
                         ...parts
                     ]
                 }],
+                // Removed responseMimeType for stability across accounts/versions
                 generationConfig: {
-                    responseMimeType: "application/json"
+                    temperature: 0.1,
+                    topP: 0.95
                 }
             })
         });
@@ -78,14 +83,16 @@ export async function extractDataFromImages(base64Images, apiKey) {
             throw new Error("O Google não conseguiu analisar esta imagem (bloqueio de segurança ou baixa qualidade).");
         }
 
-        const textResponse = result.candidates[0].content.parts[0].text;
-        console.log("[VisionAI] Resposta da IA:", textResponse);
+        let textResponse = result.candidates[0].content.parts[0].text;
+        console.log("[VisionAI] Resposta bruta da IA:", textResponse);
         
-        // Clean up markdown if present
+        // Clean up markdown if present (e.g., ```json { ... } ```)
         const jsonMatch = textResponse.match(/\{[\s\S]*\}/);
-        const cleanJson = jsonMatch ? jsonMatch[0] : textResponse;
+        if (!jsonMatch) {
+            throw new Error("A IA não retornou um formato de dados válido. Tente outra foto.");
+        }
         
-        return JSON.parse(cleanJson);
+        return JSON.parse(jsonMatch[0]);
     } catch (error) {
         console.error("Vision API Error:", error);
         throw error;
@@ -93,10 +100,7 @@ export async function extractDataFromImages(base64Images, apiKey) {
 }
 
 async function simulateOcr(images) {
-    // Artificial delay
     await new Promise(r => setTimeout(r, 2000));
-    
-    // Return mock data based on "probability" for testing
     return {
         name: "Produto Identificado por IA (Mock)",
         price: 19.90,
