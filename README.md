@@ -97,8 +97,21 @@ git push origin main
 
 ## Notas Importantes para Desenvolvedores
 
+### TailwindCSS v4 — sintaxe obrigatória
+
+O projeto usa **TailwindCSS v4** com `@tailwindcss/postcss`. O `src/index.css` DEVE ter:
+
+```css
+@import "tailwindcss";   /* ✅ correto — v4 */
+```
+
+**Nunca usar a sintaxe v3** (`@tailwind base; @tailwind components; @tailwind utilities;`) — ela quebra todo o CSS silenciosamente. O CSS compilado correto tem ~24 kB. Se estiver ~8 kB, está errado.
+
+### Outras notas
+
 - `vite.config.js` tem `base: '/mercadoapp/'` — **obrigatório** para GitHub Pages funcionar
 - `.claude/settings.local.json` está no `.gitignore` — não commitar
 - A API Key do Gemini fica **apenas no localStorage do usuário** — nunca vai para o servidor
 - O `gh` CLI pode ter token inválido no keyring — usar `git` diretamente se necessário
+- Nunca fazer force push sem verificar `git log origin/main` antes — o remoto pode ter correções importantes
 - Conta GitHub: **Ackerss** | Usuário: Jacson (NatuBrava Produtos Naturais)

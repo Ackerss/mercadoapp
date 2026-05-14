@@ -44,12 +44,33 @@ src/
 - Ranking automático: badge "Melhor Opção" + % de diferença nos outros
 - Settings: API Key e modelo Gemini (salvo em localStorage)
 
-## Avisos importantes
+## Avisos importantes — LEIA ANTES DE MEXER
 
-- `vite.config.js` tem `base: '/mercadoapp/'` — OBRIGATÓRIO para GitHub Pages
+### ⚠️ TailwindCSS v4 — sintaxe específica
+O projeto usa **TailwindCSS v4** com o plugin `@tailwindcss/postcss`. A sintaxe do CSS é DIFERENTE da v3:
+
+**CORRETO (v4) — `src/index.css`:**
+```css
+@import "tailwindcss";
+```
+
+**ERRADO (v3 — quebra o app):**
+```css
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+```
+
+Se o CSS parecer que não está aplicando (botões sem cor, layout sem estilo, `fixed` não funcionando), verifique `src/index.css` — provavelmente foi revertido para a sintaxe v3. O CSS compilado correto tem ~24 kB. Se estiver ~8 kB, está errado.
+
+### ⚠️ Force push apaga correções do remoto
+Nunca fazer force push sem antes verificar se o remoto tem correções que o local não tem. O histórico do GitHub (`git log origin/main`) pode conter fixes importantes não presentes no local.
+
+### ⚠️ Git
+- `vite.config.js` tem `base: '/mercadoapp/'` — OBRIGATÓRIO para GitHub Pages funcionar
 - `.claude/settings.local.json` está no `.gitignore` — não commitar
-- `gh auth status` pode mostrar token inválido — credenciais do git via Windows Credential Manager funcionam
-- Se o `gh` CLI falhar, usar `git` diretamente para push
+- `gh auth status` pode mostrar token inválido — usar `git` diretamente para push
+- `git push --force` só se o código local for confirmadamente mais novo
 
 ## Usuário
 
