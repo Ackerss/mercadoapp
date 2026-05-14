@@ -1,6 +1,4 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
 body {
   margin: 0;
@@ -9,10 +7,9 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #f3f4f6; /* Tailwind gray-100 */
+  background-color: #f3f4f6;
 }
 
-/* Base custom styles to ensure good mobile feel */
 input, textarea, button, select, a {
   -webkit-tap-highlight-color: transparent;
 }
