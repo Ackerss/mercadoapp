@@ -72,6 +72,21 @@ Nunca fazer force push sem antes verificar se o remoto tem correções que o loc
 - `gh auth status` pode mostrar token inválido — usar `git` diretamente para push
 - `git push --force` só se o código local for confirmadamente mais novo
 
+## ⚠️ Ecossistema de 3 Apps — LEIA ANTES DE AGIR
+
+Este projeto **não está sozinho**. Existe um terceiro app que copia o código desta pasta:
+
+- **App unificado:** `../mercado-acker_unificado/` (pasta vizinha)
+- **Documentação completa:** `../mercado-acker_unificado/LEIA_PRIMEIRO.md`
+- **Aviso específico desta pasta:** `./AVISO_PROJETO.md`
+
+**Regra essencial:** Edite livremente aqui. Para propagar pro app unificado:
+```bash
+cd "../mercado-acker_unificado"
+npm run sync:comparar
+git add . && git commit -m "sync: atualiza aba comparar" && git push
+```
+
 ## Usuário
 
 Jacson — dono da NatuBrava (loja de produtos naturais). Usa o app no celular no supermercado para decidir qual produto compra. Email: jacsonsax@gmail.com
